@@ -8,6 +8,7 @@ Lignes = 20
 Epais = 35
 
 update = t.Pen();update.up();update.shape("square")
+result = t.Pen();result.ht();result.up()
 
 Bricks =[None,
 	["cyan",((-1,1),(0,1),(1,1),(2,1))],
@@ -17,16 +18,7 @@ Bricks =[None,
 	["green",((-1,0),(0,0),(0,1),(1,1))],
 	["purple",((-1,0),(0,0),(0,1),(1,0))],
 	["red",((-1,1),(0,1),(0,0),(1,0))]]
-
-#Bricks =[None,
-#	["cyan",[[-1,1],[0,1],[1,1],[2,1]]],
-#	["blue",[[-1,1],[-1,0],[0,0],[1,0]]],
-#	["orange",[[-1,0],[0,0],[1,0],[1,1]]],
-#	["yellow",[[0,1],[0,0],[1,0],[1,1]]],
-#	["green",[[-1,0],[0,0],[0,1],[1,1]]],
-#	["purple",[[-1,0],[0,0],[0,1],[1,0]]],
-#	["red",[[-1,1],[0,1],[0,0],[1,0]]]]
-
+	
 Spawn = [Colonnes//2 - 1,Lignes - 2]
 
 def board():
@@ -99,13 +91,20 @@ def movingPart(Board):
 
 	def down():
 		It[:] = [1]
-
+	
 	def up():
-		pass # TODO
+		up2(ins)
+
+	def up2(ins):
+		a,b,c,d = t.Vec2D(ins[0][0],ins[0][1]), t.Vec2D(ins[1][0],ins[1][1]), t.Vec2D(ins[2][0],ins[2][1]), t.Vec2D(ins[3][0],ins[3][1])
+		temp = [(round(a.rotate(90)[0]),round(a.rotate(90)[1])),(round(b.rotate(90)[0]),round(b.rotate(90)[1])),(round(c.rotate(90)[0]),round(c.rotate(90)[1])),(round(d.rotate(90)[0]),round(d.rotate(90)[1]))]
+		if check(Board,temp,xy):
+			ins[:] = temp
 
 	color,ins = tetrisBrick()
 	xy = Spawn[:]
-	It = [100]
+	It = [50]
+	ins = [x for x in ins]
 	if check(Board,ins,xy):
 		falling = True
 		t.onkey(right,"Right")
@@ -114,6 +113,7 @@ def movingPart(Board):
 		t.onkey(up,"Up")
 		t.listen()
 		i = 0
+		time.sleep(0.5)
 		while falling:
 			BoardTemp = deepcopy(Board)
 			for coo in ins:
@@ -123,13 +123,18 @@ def movingPart(Board):
 			if i >= It[0]:
 				xy[1] -= 1
 				i = 0
-				It = [100]
+				It = [50]
+			else:
+				time.sleep(0.01)
 
 			falling = check(Board,ins,xy)
 			i += 1
 		Board[:] = BoardTemp
 		gameover = False
-		time.sleep(0.75)
+		t.onkey(None,"Right")
+		t.onkey(None,"Left")
+		t.onkey(None,"Down")
+		t.onkey(None,"Up")
 	else:
 		gameover = True
 
@@ -137,6 +142,7 @@ def movingPart(Board):
 
 def checkLine(Board):
 	i = 0
+	score = 0
 	while i < Lignes:
 		yes = True
 		j = 0
@@ -146,11 +152,24 @@ def checkLine(Board):
 			else:
 				j += 1
 		if yes:
+			score += 1
 			del Board[i]
 			Board.append(["black" for _ in range(Lignes)])
 			boardUpdate(Board)
 		else:
 			i += 1
+	return score
+
+def displayResult(score):
+	print("Your score :",score)
+	result.ht();result.up();result.goto(0,Lignes*Epais/4);result.color("black","grey");result.down()
+	result.begin_fill()
+	for _ in range(2):
+		result.fd(Colonnes*Epais);result.left(90);result.fd(Lignes*Epais/2);result.left(90)
+	result.end_fill()
+
+	input()
+	result.reset()
 
 def runGame():
 	board()
@@ -158,10 +177,12 @@ def runGame():
 	while play:
 		Board = boardReset()
 		gameover = False
+		score = 0
 		while not gameover:
 			gameover = movingPart(Board)
-			checkLine(Board)
-		print("You have lost")
+			score += checkLine(Board)
+		print("Gameover!")
+		displayResult(score)
 		play = int(input("Wanna play again ? (1:Yes,2:No) : "))
 		if play == 1:play = True
 		else:play = False
