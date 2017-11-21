@@ -12,6 +12,7 @@ result = t.Pen();result.ht();result.up()
 
 Score = 0
 Board = []
+BoardTemp = []
 color = None
 ins = None
 ins = None
@@ -72,31 +73,30 @@ def boardReset():
 	Board = [[8 for _ in range(Colonnes)] for _ in range(Lignes)]
 	boardUpdate(Board)
 
-def boardUpdate(b):
+def boardUpdate(board):
 	"""TODO"""
 	print("Board update")
 	update.ht();update.clearstamps();update.shape("square");update.shapesize(1.4,1.4);update.up()
 	for i in range(Lignes):
 		update.goto(Epais/2,Epais/2 + i * Epais)
 		for j in range(Colonnes):
-			if b[i][j] != 8:
-				update.color(Color[b[i][j]])
+			if board[i][j] != 8:
+				update.color(Color[board[i][j]])
 				update.stamp()
 				update.up()
 			update.fd(Epais)
 	t.update()
 
-def check(b):
+def check(board,pos,ins):
 	"""TODO"""
-	global xy
-	print(xy)
 	print("Check")
 	can = True
 	i = 0
+	print(pos)
 	while can and i < 4:
-		if 0 <= xy[0]+ins[i][0] < Colonnes and xy[1] + ins[i][1]<Lignes:
-			can = b[xy[1]+ins[i][1]][xy[0]+ins[i][0]] == 8
-			if xy[1]+ins[i][1] < 0:
+		if 0 <= pos[0]+ins[i][0] < Colonnes and pos[1] + ins[i][1]<Lignes:
+			can = board[pos[1]+ins[i][1]][pos[0]+ins[i][0]] == 8
+			if pos[1]+ins[i][1] < 0:
 				can = False
 			i += 1
 		else:
@@ -155,12 +155,12 @@ def start():
 
 def play():
 	print("Play")
-	global Board,color,ins,ins,xy,Playing
+	global Board,color,ins,xy,Playing
 	print(Board)
 	tetrisBrick()
 	ins = list(ins)
 	xy = Spawn[:]
-	if check(Board):
+	if check(Board,xy,ins):
 		movingPart()
 	else:
 		displayResult()
@@ -174,15 +174,15 @@ def play():
 
 def movingPart():
 	print("Moving Part")
-	global Board,ins,ins,xy
+	global Board,BoardTemp,ins,ins,xy
 	BoardTemp = deepcopy(Board)
 	for coo in ins:
 		BoardTemp[xy[1]+coo[1]][xy[0]+coo[0]] = color
 	boardUpdate(BoardTemp)
 	xy[1] -= 1
 
-	if check(Board):
-		t.ontimer(movingPart,100)
+	if check(Board,xy,ins):
+		t.ontimer(movingPart,1000)
 	else:
 		Board = BoardTemp
 		play()
@@ -204,10 +204,18 @@ def runGame():
 	t.mainloop()
 
 def right():
+	global Board,BoardTemp,xy,ins
 	print("Right")
+	coord = (xy[0] + 1,xy[1])
+	if check(Board,coord,ins):
+		xy[0] += 1
 
 def left():
 	print("Left")
+	global Board,BoardTemp,xy,ins
+	coord = (xy[0] - 1,xy[1])
+	if check(Board,coord,ins):
+		xy[0] -= 1
 
 def down():
 	print("Down")
@@ -219,12 +227,3 @@ def up():
 if __name__ == "__main__":
 	board()
 	runGame()
-"""
-board()
-boardReset()
-
-Board[5][3] = 2
-
-boardUpdate()
-input()
-"""
