@@ -12,12 +12,12 @@ result = t.Pen();result.ht();result.up()
 
 Score = 0
 Board = []
-BoardTemp = []
 color = None
 ins = None
 ins = None
 xy = []
 Playing = True
+Counter = 0
 
 Color = {
 	1 : "cyan" ,
@@ -66,14 +66,14 @@ def board():
 	
 	t.update()
 
-def boardReset():
+def resetBoard():
 	"""TODO"""
 	print("Board Reset")
 	global Board
 	Board = [[8 for _ in range(Colonnes)] for _ in range(Lignes)]
-	boardUpdate(Board)
+	updateScreen(Board)
 
-def boardUpdate(board):
+def updateScreen(board):
 	"""TODO"""
 	print("Board update")
 	update.ht();update.clearstamps();update.shape("square");update.shapesize(1.4,1.4);update.up()
@@ -128,7 +128,7 @@ def checkLine():
 			Score += 1
 			del Board[i]
 			Board.append([8 for _ in range(Lignes)])
-			boardUpdate(Board)
+			updateScreen(Board)
 		else:
 			i += 1
 
@@ -148,18 +148,27 @@ def displayResult():
 	result.fd(2 * Epais);result.write("New Game  :  <spacebar>",False,align = "center",font = ("Arial",15,"normal"))
 	result.fd(Epais);result.write("Quit  :  <escape>",False,align = "center",font = ("Arial",15,"normal"))
 
+def updateBoard():
+	global Board,xy,ins,color
+	BoardTemp = deepcopy(Board)
+	for coo in ins:
+		BoardTemp[xy[1]+coo[1]][xy[0]+coo[0]] = color
+	return BoardTemp
+
 def start():
 	print("Start")
-	boardReset()
+	resetBoard()
 	play()
 
 def play():
+	checkLine()
 	print("Play")
 	global Board,color,ins,xy,Playing
-	print(Board)
 	tetrisBrick()
 	ins = list(ins)
 	xy = Spawn[:]
+	if color == 1:
+		xy[1] += 1
 	if check(Board,xy,ins):
 		movingPart()
 	else:
@@ -174,15 +183,19 @@ def play():
 
 def movingPart():
 	print("Moving Part")
-	global Board,BoardTemp,ins,ins,xy
-	BoardTemp = deepcopy(Board)
-	for coo in ins:
-		BoardTemp[xy[1]+coo[1]][xy[0]+coo[0]] = color
-	boardUpdate(BoardTemp)
-	xy[1] -= 1
-
+	global Board,ins,ins,xy,Counter
+	BoardTemp = updateBoard()
+	updateScreen(BoardTemp)
+	
+	if Counter == 0:
+		xy[1] -= 1
+		Counter = 1
+	elif Counter == 60:
+		Counter = 0
+	else:
+		Counter += 1
 	if check(Board,xy,ins):
-		t.ontimer(movingPart,1000)
+		t.ontimer(movingPart,10)
 	else:
 		Board = BoardTemp
 		play()
@@ -208,22 +221,38 @@ def right():
 	print("Right")
 	coord = (xy[0] + 1,xy[1])
 	if check(Board,coord,ins):
+		BoardTemp = updateBoard()
 		xy[0] += 1
+		updateScreen(BoardTemp)
 
 def left():
 	print("Left")
 	global Board,BoardTemp,xy,ins
 	coord = (xy[0] - 1,xy[1])
 	if check(Board,coord,ins):
+		BoardTemp = updateBoard()
 		xy[0] -= 1
+		updateScreen(BoardTemp)
 
 def down():
 	print("Down")
+	global Board,BoardTemp,xy,ins
+	coord = (xy[0],xy[1]-1)
+	if check(Board,coord,ins):
+		BoardTemp = updateBoard()
+		xy[1] -= 1
+		updateScreen(BoardTemp)
 
 def up():
 	print("Up")
+	global Board,BoardTemp,xy,ins
+	a,b,c,d = t.Vec2D(ins[0][0],ins[0][1]), t.Vec2D(ins[1][0],ins[1][1]), t.Vec2D(ins[2][0],ins[2][1]), t.Vec2D(ins[3][0],ins[3][1])
+	temp = [(round(a.rotate(90)[0]),round(a.rotate(90)[1])),(round(b.rotate(90)[0]),round(b.rotate(90)[1])),(round(c.rotate(90)[0]),round(c.rotate(90)[1])),(round(d.rotate(90)[0]),round(d.rotate(90)[1]))]
+	if check(Board,xy,temp):
+		ins = temp
 
 
 if __name__ == "__main__":
+	print("---Debug---")
 	board()
 	runGame()
