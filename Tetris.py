@@ -16,8 +16,8 @@ color = None
 ins = None
 ins = None
 xy = []
-Playing = True
 Counter = 0
+Count = 0
 
 Color = {
 	1 : "cyan" ,
@@ -80,7 +80,7 @@ def updateScreen(board):
 	for i in range(Lignes):
 		update.goto(Epais/2,Epais/2 + i * Epais)
 		for j in range(Colonnes):
-			if board[i][j] != 8:
+			if board[i][j] != Colonnes:
 				update.color(Color[board[i][j]])
 				update.stamp()
 				update.up()
@@ -163,7 +163,7 @@ def start():
 def play():
 	checkLine()
 	print("Play")
-	global Board,color,ins,xy,Playing
+	global Board,color,ins,xy
 	tetrisBrick()
 	ins = list(ins)
 	xy = Spawn[:]
@@ -203,7 +203,9 @@ def movingPart():
 
 def runGame():
 	print("Run Game")
-	global Score
+	global Score,Count
+	Count += 1
+	print(Count)
 	result.reset()
 	Score = 0
 	t.onkey(None,"Escape")
