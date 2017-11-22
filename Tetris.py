@@ -14,10 +14,9 @@ Score = 0
 Board = []
 color = None
 ins = None
-ins = None
 xy = []
 Counter = 0
-Count = 0
+FPS = 60
 
 Color = {
 	1 : "cyan" ,
@@ -44,7 +43,6 @@ Spawn = [Colonnes//2 - 1,Lignes - 2]
 
 def board():
 	"""TODO"""
-	print("Board")
 	t.setup(Colonnes*Epais,Lignes*Epais)
 	t.setworldcoordinates(0,0,Colonnes*Epais+5,Lignes*Epais)
 	t.bgcolor("black")
@@ -68,14 +66,12 @@ def board():
 
 def resetBoard():
 	"""TODO"""
-	print("Board Reset")
 	global Board
 	Board = [[8 for _ in range(Colonnes)] for _ in range(Lignes)]
 	updateScreen(Board)
 
 def updateScreen(board):
 	"""TODO"""
-	print("Board update")
 	update.ht();update.clearstamps();update.shape("square");update.shapesize(1.4,1.4);update.up()
 	for i in range(Lignes):
 		update.goto(Epais/2,Epais/2 + i * Epais)
@@ -89,10 +85,8 @@ def updateScreen(board):
 
 def check(board,pos,ins):
 	"""TODO"""
-	print("Check")
 	can = True
 	i = 0
-	print(pos)
 	while can and i < 4:
 		if 0 <= pos[0]+ins[i][0] < Colonnes and pos[1] + ins[i][1]<Lignes:
 			can = board[pos[1]+ins[i][1]][pos[0]+ins[i][0]] == 8
@@ -101,19 +95,16 @@ def check(board,pos,ins):
 			i += 1
 		else:
 			can = False
-	print(can)
 	return can
 
 def tetrisBrick():
 	"""TODO"""
 	global ins,color
-	print("Tetris Brick")
 	color = r.randint(1,7)
 	ins = Bricks[color]
 
 def checkLine():
 	"""TODO"""
-	print("Check Line")
 	global Score,Board
 	i = 0
 	while i < Lignes:
@@ -134,7 +125,6 @@ def checkLine():
 
 def displayResult():
 	"""TODO"""
-	print("Display Result")
 	global Score
 	result.ht();result.up();result.goto(0,Lignes*Epais/3);result.color("grey");result.down()
 	result.begin_fill()
@@ -156,14 +146,13 @@ def updateBoard():
 	return BoardTemp
 
 def start():
-	print("Start")
 	resetBoard()
 	play()
 
 def play():
 	checkLine()
-	print("Play")
-	global Board,color,ins,xy
+	global Board,color,ins,xy,Counter
+	Counter = 0
 	tetrisBrick()
 	ins = list(ins)
 	xy = Spawn[:]
@@ -179,33 +168,26 @@ def play():
 		t.onkey(None,"Up")
 		t.onkey(t.bye,"Escape")
 		t.onkey(runGame,"space")
-		print("Finish")
 
 def movingPart():
-	print("Moving Part")
-	global Board,ins,ins,xy,Counter
+	global Board,ins,ins,xy,Counter,FPS
 	BoardTemp = updateBoard()
 	updateScreen(BoardTemp)
 	
-	if Counter == 0:
+	if Counter == FPS:
 		xy[1] -= 1
-		Counter = 1
-	elif Counter == 60:
 		Counter = 0
 	else:
 		Counter += 1
 	if check(Board,xy,ins):
-		t.ontimer(movingPart,10)
+		t.ontimer(movingPart,round(1000/FPS))
 	else:
 		Board = BoardTemp
 		play()
 
 
 def runGame():
-	print("Run Game")
-	global Score,Count
-	Count += 1
-	print(Count)
+	global Score
 	result.reset()
 	Score = 0
 	t.onkey(None,"Escape")
@@ -220,41 +202,33 @@ def runGame():
 
 def right():
 	global Board,BoardTemp,xy,ins
-	print("Right")
 	coord = (xy[0] + 1,xy[1])
 	if check(Board,coord,ins):
-		BoardTemp = updateBoard()
 		xy[0] += 1
-		updateScreen(BoardTemp)
 
 def left():
-	print("Left")
 	global Board,BoardTemp,xy,ins
 	coord = (xy[0] - 1,xy[1])
 	if check(Board,coord,ins):
-		BoardTemp = updateBoard()
 		xy[0] -= 1
-		updateScreen(BoardTemp)
 
 def down():
-	print("Down")
 	global Board,BoardTemp,xy,ins
 	coord = (xy[0],xy[1]-1)
 	if check(Board,coord,ins):
-		BoardTemp = updateBoard()
 		xy[1] -= 1
-		updateScreen(BoardTemp)
 
 def up():
-	print("Up")
 	global Board,BoardTemp,xy,ins
 	a,b,c,d = t.Vec2D(ins[0][0],ins[0][1]), t.Vec2D(ins[1][0],ins[1][1]), t.Vec2D(ins[2][0],ins[2][1]), t.Vec2D(ins[3][0],ins[3][1])
 	temp = [(round(a.rotate(90)[0]),round(a.rotate(90)[1])),(round(b.rotate(90)[0]),round(b.rotate(90)[1])),(round(c.rotate(90)[0]),round(c.rotate(90)[1])),(round(d.rotate(90)[0]),round(d.rotate(90)[1]))]
 	if check(Board,xy,temp):
 		ins = temp
 
-
-if __name__ == "__main__":
-	print("---Debug---")
+def Tetris():
 	board()
 	runGame()
+
+
+if __name__ == "__main__":
+	Tetris()
