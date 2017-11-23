@@ -26,13 +26,13 @@ Color = {
 		}
 
 Bricks = {
-	1 : ((-1,0),(0,0),(1,0),(2,0)),
-	2 : ((-1,1),(-1,0),(0,0),(1,0)),
-	3 : ((-1,0),(0,0),(1,0),(1,1)),
-	4 : ((0,1),(0,0),(1,0),(1,1)),
-	5 : ((-1,0),(0,0),(0,1),(1,1)),
-	6 : ((-1,0),(0,0),(0,1),(1,0)),
-	7 : ((-1,1),(0,1),(0,0),(1,0))
+	1 : [[-1,0],[0,0],[1,0],[2,0]],
+	2 : [[-1,1],[-1,0],[0,0],[1,0]],
+	3 : [[-1,0],[0,0],[1,0],[1,1]],
+	4 : [[0,1],[0,0],[1,0],[1,1]],
+	5 : [[-1,0],[0,0],[0,1],[1,1]],
+	6 : [[-1,0],[0,0],[0,1],[1,0]],
+	7 : [[-1,1],[0,1],[0,0],[1,0]]
 		}
 
 def board():
@@ -43,14 +43,14 @@ def board():
 	t.title("Tetris")
 	t.tracer(False)
 
-	column = t.Pen();column.color("white")
+	column = t.Pen();column.color("grey")
 	column.ht();column.penup();column.goto(0,0);column.pendown()
 	column.left(90)
 	for i in range(1,Colonnes+2):
 		column.fd(Lignes*Epais)
 		column.penup();column.goto(i*Epais,0);column.pendown()
 
-	row = t.Pen();row.color("white")
+	row = t.Pen();row.color("grey")
 	row.ht();row.penup();row.goto(0,0);row.pendown()
 	for i in range(1,Lignes+2):
 		row.fd(Colonnes*Epais)
@@ -71,7 +71,7 @@ def updateScreen(board):
 	for i in range(Lignes):
 		update.goto(Epais/2,Epais/2 + i * Epais)
 		for j in range(Colonnes):
-			if board[i][j] != Colonnes:
+			if board[i][j] != 8:
 				update.color(Color[board[i][j]])
 				update.stamp()
 				update.up()
@@ -91,12 +91,6 @@ def check(board,pos,ins):
 		else:
 			can = False
 	return can
-
-def tetrisBrick():
-	"""Fonction qui selectionne une brique"""
-	global ins,color
-	color = r.randint(1,7)
-	ins = Bricks[color]
 
 def checkLine():
 	"""Fonction qui vérifie si une ou plusieurs lignes sont complètes et les supprime"""
@@ -141,12 +135,12 @@ def updateBoard():
 		BoardTemp[xy[1]+coo[1]][xy[0]+coo[0]] = color
 	return BoardTemp
 
-def play():
-	"""Function that might be deleted"""
+def tetrisBrick():
+	"""Fonction qui sélectionne une brique"""
 	checkLine()
 	global Board,color,ins,xy
-	tetrisBrick()
-	ins = list(ins)
+	color = r.randint(1,7)
+	ins = Bricks[color]
 	xy = Spawn[:]
 	if color == 1:
 		xy[1] += 1
@@ -160,24 +154,24 @@ def play():
 def movingPart():
 	"""Fonction qui s'occupe de faire descendre la pièce"""
 	global Board,ins,ins,xy
+	BoardTemp = updateBoard()
+	updateScreen(BoardTemp)
 	t.onkey(right,"Right")
 	t.onkey(left,"Left")
 	t.onkey(down,"Down")
-	t.onkey(up,"Up")
-	BoardTemp = updateBoard()
-	updateScreen(BoardTemp)
+	t.onkey(rotate,"Up")
 	
 	xy[1] -= 1
 
 	if check(Board,xy,ins):
-		t.ontimer(movingPart,0)
+		t.ontimer(movingPart,1000)
 	else:
 		Board = BoardTemp
 		t.onkey(None,"Right")
 		t.onkey(None,"Left")
 		t.onkey(None,"Down")
 		t.onkey(None,"Up")
-		play()
+		tetrisBrick()
 
 def runGame():
 	"""Fonction qui lance une nouvelle partie"""
@@ -186,13 +180,9 @@ def runGame():
 	Score = 0
 	t.onkey(None,"Escape")
 	t.onkey(None,"space")
-	t.onkey(right,"Right")
-	t.onkey(left,"Left")
-	t.onkey(down,"Down")
-	t.onkey(up,"Up")
 	t.listen()
 	resetBoard()
-	play()
+	tetrisBrick()
 
 def right():
 	"""Fonction qui déplace la pièce à droite"""
@@ -221,11 +211,12 @@ def down():
 		BoardTemp = updateBoard()
 		updateScreen(BoardTemp)
 
-def up():
+def rotate():
 	"""Fonction qui fait tourner la pièce"""
 	global Board,BoardTemp,xy,ins
-	a,b,c,d = t.Vec2D(ins[0][0],ins[0][1]), t.Vec2D(ins[1][0],ins[1][1]), t.Vec2D(ins[2][0],ins[2][1]), t.Vec2D(ins[3][0],ins[3][1])
-	temp = [(round(a.rotate(90)[0]),round(a.rotate(90)[1])),(round(b.rotate(90)[0]),round(b.rotate(90)[1])),(round(c.rotate(90)[0]),round(c.rotate(90)[1])),(round(d.rotate(90)[0]),round(d.rotate(90)[1]))]
+	temp = [None for i in range(len(ins))]
+	for i in range(4):
+		temp[i] = (-ins[i][1],ins[i][0]) # (x,y) rotation de 90° ---> (-y,x) 
 	if check(Board,xy,temp):
 		ins = temp
 		BoardTemp = updateBoard()
