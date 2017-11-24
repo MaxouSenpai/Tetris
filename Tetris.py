@@ -11,7 +11,7 @@ Epais = 35
 
 Spawn = [Colonnes // 2 - 1, Lignes - 2]
 
-Color = {
+Colors = {
 	1 : "cyan" ,
 	2 : "blue" ,
 	3 : "orange" ,
@@ -21,7 +21,7 @@ Color = {
 	7 : "red"
 		}
 
-#Instructions qui permetent de construire les pièces
+#Instructions qui permettent de construire les pièces
 Bricks = {
 	1 : [[-1,0],[0,0],[1,0],[2,0]],
 	2 : [[-1,1],[-1,0],[0,0],[1,0]],
@@ -40,8 +40,8 @@ def board():
 	t.title("Tetris")
 	t.tracer(False)
 
-	column = t.Pen();column.color("grey")
-	column.ht();column.penup();column.goto(0,0);column.pendown()
+	column = t.Pen();column.color("grey");column.ht()
+	column.penup();column.goto(0,0);column.pendown()
 	column.left(90)
 	for i in range(1, Colonnes + 2):
 		column.fd(Lignes*Epais)
@@ -56,7 +56,7 @@ def board():
 	t.update()
 
 def resetBoard():
-	""" Fonction qui réinitialise le board """
+	""" Fonction qui réinitialise le board en global """
 	global Board
 	
 	Board = [[0 for _ in range(Colonnes)] for _ in range(Lignes)]
@@ -64,28 +64,29 @@ def resetBoard():
 
 def updateScreen(board):
 	""" Fonction qui met à jour l'écran avec le board en reçu en entrée """
-	update.ht();update.clearstamps();update.shape("square");update.shapesize(1.35,1.35);update.up()
-	
+	updatep.ht();updatep.shape("square");updatep.shapesize(1.35,1.35)
+	updatep.clearstamps();updatep.up()
+
 	for i in range(Lignes):
-		update.goto(Epais / 2, Epais / 2 + i * Epais )
+		updatep.goto(Epais / 2, Epais / 2 + i * Epais )
 		for j in range(Colonnes):
-			if board[i][j] != 0: # Les blocs libres ne sont pas affichés
-				update.color(Color[board[i][j]]) # Les couleurs sont stockées sous forme de chiffre
-				update.stamp()
-				update.up()
-			update.fd(Epais)
+			if board[i][j] != 0: # Les blocs vides ne sont pas affichés
+				updatep.color(Colors[board[i][j]]) # Les couleurs sont stockées sous forme de chiffre (voir le dictionnaire Colors)
+				updatep.stamp()
+				updatep.up()
+			updatep.fd(Epais)
 	t.update()
 
 def check(board,xy,ins):
-	""" Fonction qui vérifie si les blocs peuvent se placer """
+	""" Fonction qui vérifie si les blocs peuvent se placer sans superposer d'autres blocs """
 	can = True
 	i = 0
-	while can and i < 4:
+	while can and i < len(ins):
 		new_x = xy[0] + ins[i][0]
 		new_y = xy[1] + ins[i][1]
 
-		if 0 <= new_x < Colonnes and 0 <= new_y < Lignes: # On vérifie que les coordonnées ne dépassent pas les limites
-			can = board[new_y][new_x] == 0 # 0 correspond à un bloc libre
+		if 0 <= new_x < Colonnes and 0 <= new_y < Lignes: # On vérifie que les nouvelles coordonnées des blocs ne dépassent pas les limites
+			can = board[new_y][new_x] == 0 # 0 correspond à un bloc vide
 			i += 1
 		else:
 			can = False
@@ -113,51 +114,54 @@ def checkLine():
 			updateScreen(Board)
 		else:
 			i += 1
-	scorep.ht();scorep.up();scorep.goto(Colonnes * Epais / 2, Lignes * Epais + 25);scorep.clear();scorep.color("white")
+			
+	scorep.ht();scorep.color("white");scorep.clear()
+	scorep.up();scorep.goto(Colonnes * Epais / 2, Lignes * Epais + 25)
+	
 	scorep.write("Score : " + str(Score),False,align = "center",font = ("Ubuntu",30,"bold"))
 
 def displayResult():
 	""" Fonction qui affiche le score à la fin de la partie """
 	global Score
 
-	result.ht();result.up();result.goto(0,Lignes*Epais/3);result.color("grey");result.down()
-	result.begin_fill()
+	resultp.ht();resultp.up();resultp.goto(0,Lignes*Epais/3);resultp.color("grey");resultp.down()
+	resultp.begin_fill()
 	for _ in range(2):
-		result.fd(Colonnes*Epais);result.left(90);result.fd(Lignes*Epais/3);result.left(90)
-	result.color("grey20")
-	result.end_fill()
-	result.color("white")
-	result.ht();result.right(90);result.goto(Colonnes*Epais/2,Lignes*Epais*7/12-20);
-	result.write(str(Score)+" rows !",False,align = "center",font = ("Ubuntu",30,"bold"))
-	result.fd(2 * Epais);result.write("New Game  :  <spacebar>",False,align = "center",font = ("Ubuntu",15,"normal"))
-	result.fd(Epais);result.write("Quit  :  <escape>",False,align = "center",font = ("Ubuntu",15,"normal"))
+		resultp.fd(Colonnes*Epais);resultp.left(90);resultp.fd(Lignes*Epais/3);resultp.left(90)
+	resultp.color("grey20")
+	resultp.end_fill()
+	resultp.color("white")
+	resultp.ht();resultp.right(90);resultp.goto(Colonnes*Epais/2,Lignes*Epais*7/12-20);
+	resultp.write(str(Score)+" rows !",False,align = "center",font = ("Ubuntu",30,"bold"))
+	resultp.fd(2 * Epais);resultp.write("New Game  :  <spacebar>",False,align = "center",font = ("Ubuntu",15,"normal"))
+	resultp.fd(Epais);resultp.write("Quit  :  <escape>",False,align = "center",font = ("Ubuntu",15,"normal"))
 
 	scorep.clear()
-	scorep.write("Game Over",False,align = "center",font = ("Arial",30,"bold"))
+	scorep.write("Game Over",False,align = "center",font = ("Ubuntu",30,"bold"))
 
 def updateBoard():
 	""" Fonction qui renvoie le board mis à jour """
-	global Board,pos,ins,color
+	global Board,Pos,Ins,Color
 
 	BoardTemp = deepcopy(Board)
-	for vec in ins:
-		BoardTemp[pos[1] + vec[1]][pos[0] + vec[0]] = color
+	for vec in Ins:
+		BoardTemp[Pos[1] + vec[1]][Pos[0] + vec[0]] = Color
 	
 	return BoardTemp
 
 def tetrisBrick():
 	""" Fonction qui sélectionne une pièce """
-	global Board,color,ins,pos
+	global Board,Color,Ins,Pos
 
 	checkLine()
-	color = r.randint(1,7)
-	ins = Bricks[color]
-	pos = Spawn[:]
+	Color = r.randint(1,7)
+	Ins = Bricks[Color]
+	Pos = Spawn[:]
 
-	if color == 1:
-		pos[1] += 1
+	if Color == 1: # La pièce 1 n'est que sur un seul étage donc la position de départ doit être un bloc plus haut
+		Pos[1] += 1
 	
-	if check(Board,pos,ins):
+	if check(Board,Pos,Ins):
 		BoardTemp = updateBoard()
 		updateScreen(BoardTemp)
 		t.onkey(right,"Right")
@@ -166,27 +170,27 @@ def tetrisBrick():
 		t.onkey(rotate,"Up")
 		t.ontimer(movingPart,1000)
 	
-	else:
+	else: # Si la pièce ne peut pas se placer juste après qu'elle ait été choisie c'est gameover
 		displayResult()
 		t.onkey(t.bye,"Escape")
 		t.onkey(runGame,"space")
 
 def movingPart():
 	""" Fonction qui s'occupe de faire descendre la pièce """
-	global Board,ins,pos
+	global Board,Ins,Pos
 
-	pos[1] -= 1
-	if check(Board,pos,ins):
+	Pos[1] -= 1
+	if check(Board,Pos,Ins):
 		BoardTemp = updateBoard()
 		updateScreen(BoardTemp)
 		t.ontimer(movingPart,1000)
 
-	else:
+	else: # Désactivation des touches pour éviter tout problème
 		t.onkey(None,"Right")
 		t.onkey(None,"Left")
 		t.onkey(None,"Down")
 		t.onkey(None,"Up")
-		pos[1] += 1
+		Pos[1] += 1
 		BoardTemp = updateBoard()
 		updateScreen(BoardTemp)
 		Board = BoardTemp
@@ -196,7 +200,7 @@ def runGame():
 	""" Fonction qui lance une nouvelle partie """
 	global Score
 
-	result.reset()
+	resultp.reset()
 	Score = 0
 	t.onkey(None,"Escape")
 	t.onkey(None,"space")
@@ -206,52 +210,52 @@ def runGame():
 
 def right():
 	""" Fonction qui déplace la pièce à droite de 1 bloc """
-	global Board,pos,ins
+	global Board,Pos,Ins
 
-	coord = (pos[0] + 1,pos[1])
-	if check(Board,coord,ins):
-		pos[0] += 1
+	coord = (Pos[0] + 1,Pos[1])
+	if check(Board,coord,Ins):
+		Pos[0] += 1
 		BoardTemp = updateBoard()
 		updateScreen(BoardTemp)
 
 def left():
 	""" Fonction qui déplace la pièce à gauche de 1 bloc """
-	global Board,pos,ins
+	global Board,Pos,Ins
 
-	coord = (pos[0] - 1,pos[1])
-	if check(Board,coord,ins):
-		pos[0] -= 1
+	coord = (Pos[0] - 1,Pos[1])
+	if check(Board,coord,Ins):
+		Pos[0] -= 1
 		BoardTemp = updateBoard()
 		updateScreen(BoardTemp)
 
 def down():
 	""" Fonction qui fait descendre la pièce de 1 bloc """
-	global Board,pos,ins
+	global Board,Pos,Ins
 
-	coord = (pos[0],pos[1]-1)
-	if check(Board,coord,ins):
-		pos[1] -= 1
+	coord = (Pos[0],Pos[1]-1)
+	if check(Board,coord,Ins):
+		Pos[1] -= 1
 		BoardTemp = updateBoard()
 		updateScreen(BoardTemp)
 
 def rotate():
 	""" Fonction qui fait tourner la pièce de 90° """
-	global Board,pos,ins
+	global Board,Pos,Ins
 
-	temp = [None for i in range(len(ins))]
-	for i in range(4):
-		temp[i] = (-ins[i][1],ins[i][0]) # (x,y) rotation de 90° ---> (-y,x) 
+	temp = [None for i in range(len(Ins))]
+	for i in range(len(Ins)):
+		temp[i] = (-Ins[i][1],Ins[i][0]) # (x,y) rotation de 90° ---> (-y,x) 
 	
-	if check(Board,pos,temp):
-		ins = temp
+	if check(Board,Pos,temp):
+		Ins = temp
 		BoardTemp = updateBoard()
 		updateScreen(BoardTemp)
 
 def Tetris():
 	""" Fonction qui lance le jeu """
-	global update,result,scorep
-	update = t.Pen()
-	result = t.Pen()
+	global updatep,resultp,scorep
+	updatep = t.Pen()
+	resultp = t.Pen()
 	scorep = t.Pen()
 	board()
 	runGame()
