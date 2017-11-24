@@ -35,7 +35,7 @@ Bricks = {
 def board():
 	""" Fonction qui initialise la fenêtre de jeu """
 	t.setup(Colonnes * Epais, Lignes * Epais)
-	t.setworldcoordinates(0, 0, Colonnes * Epais + 5, Lignes * Epais)
+	t.setworldcoordinates(0, 0, Colonnes * Epais + 5, Lignes * Epais + 100)
 	t.bgcolor("black")
 	t.title("Tetris")
 	t.tracer(False)
@@ -64,10 +64,10 @@ def resetBoard():
 
 def updateScreen(board):
 	""" Fonction qui met à jour l'écran avec le board en reçu en entrée """
-	update.ht();update.clearstamps();update.shape("square");update.shapesize(1.4,1.4);update.up()
+	update.ht();update.clearstamps();update.shape("square");update.shapesize(1.35,1.35);update.up()
 	
 	for i in range(Lignes):
-		update.goto(Epais / 2, Epais / 2 + i * Epais)
+		update.goto(Epais / 2, Epais / 2 + i * Epais )
 		for j in range(Colonnes):
 			if board[i][j] != 0: # Les blocs libres ne sont pas affichés
 				update.color(Color[board[i][j]]) # Les couleurs sont stockées sous forme de chiffre
@@ -93,7 +93,7 @@ def check(board,xy,ins):
 	return can
 
 def checkLine():
-	""" Fonction qui vérifie si une ou plusieurs lignes sont complètes et les supprime """
+	""" Fonction qui vérifie si une ou plusieurs lignes sont complètes, les supprime  et met à jour le score """
 	global Score,Board
 
 	i = 0
@@ -113,6 +113,8 @@ def checkLine():
 			updateScreen(Board)
 		else:
 			i += 1
+	scorep.ht();scorep.up();scorep.goto(Colonnes * Epais / 2, Lignes * Epais + 25);scorep.clear();scorep.color("white")
+	scorep.write("Score : " + str(Score),False,align = "center",font = ("Ubuntu",30,"bold"))
 
 def displayResult():
 	""" Fonction qui affiche le score à la fin de la partie """
@@ -126,9 +128,12 @@ def displayResult():
 	result.end_fill()
 	result.color("white")
 	result.ht();result.right(90);result.goto(Colonnes*Epais/2,Lignes*Epais*7/12-20);
-	result.write(str(Score)+" rows !",False,align = "center",font = ("Arial",30,"normal"))
-	result.fd(2 * Epais);result.write("New Game  :  <spacebar>",False,align = "center",font = ("Arial",15,"normal"))
-	result.fd(Epais);result.write("Quit  :  <escape>",False,align = "center",font = ("Arial",15,"normal"))
+	result.write(str(Score)+" rows !",False,align = "center",font = ("Ubuntu",30,"bold"))
+	result.fd(2 * Epais);result.write("New Game  :  <spacebar>",False,align = "center",font = ("Ubuntu",15,"normal"))
+	result.fd(Epais);result.write("Quit  :  <escape>",False,align = "center",font = ("Ubuntu",15,"normal"))
+
+	scorep.clear()
+	scorep.write("Game Over",False,align = "center",font = ("Arial",30,"bold"))
 
 def updateBoard():
 	""" Fonction qui renvoie le board mis à jour """
@@ -244,9 +249,10 @@ def rotate():
 
 def Tetris():
 	""" Fonction qui lance le jeu """
-	global update,result
+	global update,result,scorep
 	update = t.Pen()
 	result = t.Pen()
+	scorep = t.Pen()
 	board()
 	runGame()
 	t.mainloop()
